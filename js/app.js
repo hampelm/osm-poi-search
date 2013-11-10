@@ -56,6 +56,8 @@ $(function(){
 
 		setFeatureType: function(event) {
 			event.preventDefault();
+			app.markers.clearLayers();
+
 			var $elt = $(event.target);
 			$('.options a').removeClass('selected');
 			$elt.addClass('selected');

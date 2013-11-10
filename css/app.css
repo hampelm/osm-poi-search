@@ -32,10 +32,18 @@ h1, h2, h3, strong, .options {
 	padding: 25px;
 }
 
+p {
+	max-width: 500px;
+}
+
 a {
 	color: #58aeff;
 	text-decoration: none;
 	border-bottom: 1px solid #58aeff;
+}
+
+#map a {
+	border: 0px none;
 }
 
 .options {
