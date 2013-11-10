@@ -18,6 +18,14 @@ $(function(){
 			'supermarkets': {
 				key: 'shop',
 				value: 'supermarket'
+			},
+			'schools': {
+				key: 'amenity',
+				value: 'school'
+			},
+			'hospitals': {
+				key: 'amenity',
+				value: 'hospital'
 			}
 		},
 
@@ -42,6 +50,18 @@ $(function(){
   		app.findFeatures();
 
   		app.map.on('moveend', app.findFeatures);
+
+  		$('.options a').on('click', app.setFeatureType);
+		},
+
+		setFeatureType: function(event) {
+			event.preventDefault();
+			var $elt = $(event.target);
+			$('.options a').removeClass('selected');
+			$elt.addClass('selected');
+
+			app.key = $elt.attr('data-key');
+			app.findFeatures();
 		},
 
 		queryBuilder: function(object) {
