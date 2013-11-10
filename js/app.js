@@ -1,57 +1,89 @@
 $(function(){
-	var baseUrl = 'http://www.overpass-api.de/api/xapi?';
-	// http://www.overpass-api.de/api/xapi_meta?*%5Bname=Sylt%5D
-	// http://www.overpass-api.de/api/xapi?node[natural=tree][bbox=-83.12737,42.31794,-83.0175,42.37681][out:json]
-	// http://www.overpass-api.de/api/xapi?node["natural"="tree"][bbox=-83.11981201171875,42.3883461218366,-82.92016983032227,42.45170800982129]
-  var map = L.map('map').setView([42.42, -83.02 ], 13);
 
-  baseLayer = L.tileLayer('http://a.tiles.mapbox.com/v3/matth.map-zmpggdzn/{z}/{x}/{y}.png');
-  map.addLayer(baseLayer);
-  var bounds = map.getBounds();
-  var ne = bounds.getNorthEast();
-  var sw = bounds.getSouthWest();
-	console.log(ne, sw);
+	var app = {
+		BASEURL: 'http://www.overpass-api.de/api/xapi?',
 
-	var pairs = [
-		{
-			key: 'natural',
-			value: 'tree'
+		BASELAYER: 'http://a.tiles.mapbox.com/v3/matth.map-n9bps30s/{z}/{x}/{y}.png',
+
+		TAGS: {
+			'trees': {
+				key: 'natural',
+				value: 'tree'
+			},
+			'churches': {
+				key: 'amenity',
+				value: 'place_of_worship',
+				name: 'name'
+			},
+			'supermarkets': {
+				key: 'shop',
+				value: 'supermarket'
+			}
 		},
-		{
-			key: 'amenity',
-			value: 'place_of_worship',
-			name: 'name'
+
+		CIRCLESTYLE:  {
+			color: '#fff',
+			weight: 3,
+			opacity: 1,
+			fillColor: '#58aeff',
+			fillOpacity: 1,
+			radius: 8
+		},
+
+		key: 'churches',
+
+		markers: L.layerGroup(),
+
+		init: function() {
+			app.map = L.map('map').setView([42.360055,-83.067455], 13);
+			var baseLayer = L.tileLayer(app.BASELAYER);
+  		app.map.addLayer(baseLayer);
+  		app.markers.addTo(app.map);
+  		app.findFeatures();
+
+  		app.map.on('moveend', app.findFeatures);
+		},
+
+		queryBuilder: function(object) {
+			var bounds = app.map.getBounds();
+		  var ne = bounds.getNorthEast();
+		  var sw = bounds.getSouthWest();
+		  var pair = '[' + object.key + '=' + object.value + ']';
+			var text = 'node' + pair + '[bbox=' + sw.lng + ',' + sw.lat + ',' + ne.lng + ',' + ne.lat + ']';
+			url = app.BASEURL + text;
+			return url;
+		},
+
+		getName: function(node) {
+			var names = $(node).find('[k="name"]');
+			if(names[0]) {
+				return names[0].getAttribute('v');
+			}
+			return '';
+		},
+
+		processOSM: function(data) {
+			app.markers.clearLayers();
+			var nodes = $(data).find('node');
+			$.each(nodes, function(index, node) {
+				var lat = node.getAttribute('lat');
+				var lng = node.getAttribute('lon');
+				var name = app.getName(node);
+				var circle = new L.CircleMarker([lat, lng], app.CIRCLESTYLE);
+				circle.bindPopup(name);
+				app.markers.addLayer(circle);
+				//app.map.addLayer(circle);
+			});
+		},
+
+		findFeatures: function() {
+			var url = app.queryBuilder(app.TAGS[app.key]);
+			var query = $.get(url);
+			query.done(app.processOSM);
 		}
-	];
-
-	var queryMaker = function(pair) {
-		return '[' + pair.key + '=' + pair.value + ']';
-	}
-
-	// omg this is the worst
-	var pair = queryMaker(pairs[1]);
-	var text = 'node' + pair + '[bbox=' + sw.lng + ',' + sw.lat + ',' + ne.lng + ',' + ne.lat + ']';
-	url = baseUrl + text;
-
-	var processOSM = function(data) {
-		console.log(data);
-		var nodes = $(data).find('node');
-		console.log(nodes);
-		$.each(nodes, function(index, node) {
-			console.log(node);
-			var lat = node.getAttribute('lat');
-			var lng = node.getAttribute('lon');
-			console.log(lat,lng);
-
-			// node.find(tag attribute k=name get attribute v);
-
-			L.marker([lat,lng]).addTo(map).bindPopup()
-    		.openPopup();
-		});
 	};
-	var query = $.get(url)
-	query.done(processOSM);
 
+	app.init();
 });
 
 
