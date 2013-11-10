@@ -36,7 +36,7 @@ p {
 	max-width: 500px;
 }
 
-a {
+a, a:hover {
 	color: #58aeff;
 	text-decoration: none;
 	border-bottom: 1px solid #58aeff;
