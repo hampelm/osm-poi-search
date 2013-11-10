@@ -38,12 +38,16 @@ $(function(){
 			radius: 8
 		},
 
+		MAPOPTIONS: {
+			minZoom: 13
+		},
+
 		key: 'churches',
 
 		markers: L.layerGroup(),
 
 		init: function() {
-			app.map = L.map('map').setView([42.360055,-83.067455], 13);
+			app.map = L.map('map', app.MAPOPTIONS).setView([42.360055,-83.067455], 13);
 			var baseLayer = L.tileLayer(app.BASELAYER);
   		app.map.addLayer(baseLayer);
   		app.markers.addTo(app.map);
